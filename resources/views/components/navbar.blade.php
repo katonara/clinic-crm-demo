@@ -39,15 +39,24 @@
 
         {{-- Desktop CTAs --}}
         <div class="hidden items-center gap-2 lg:flex">
-            <a href="{{ route('login') }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-brand-700">
-                Login
-            </a>
-            <a href="{{ route('register') }}" class="rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
-                Register
-            </a>
-            <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
-                Book Appointment
-            </a>
+            @guest
+                <a href="{{ route('login') }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-brand-700">
+                    Login
+                </a>
+                <a href="{{ route('register') }}" class="rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
+                    Register
+                </a>
+                <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
+                    Book Appointment
+                </a>
+            @else
+                <a href="{{ auth()->user()->isStaff() ? route('admin.dashboard') : route('patient.dashboard') }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-brand-700">
+                    Dashboard
+                </a>
+                <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
+                    Book Appointment
+                </a>
+            @endguest
         </div>
 
         {{-- Mobile hamburger --}}
@@ -83,15 +92,24 @@
             @endforeach
 
             <div class="mt-4 grid gap-2 border-t border-slate-100 pt-4">
-                <a href="{{ route('login') }}" class="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                    Login
-                </a>
-                <a href="{{ route('register') }}" class="rounded-lg border border-brand-200 px-4 py-2.5 text-center text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
-                    Register
-                </a>
-                <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
-                    Book Appointment
-                </a>
+                @guest
+                    <a href="{{ route('login') }}" class="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                        Login
+                    </a>
+                    <a href="{{ route('register') }}" class="rounded-lg border border-brand-200 px-4 py-2.5 text-center text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
+                        Register
+                    </a>
+                    <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
+                        Book Appointment
+                    </a>
+                @else
+                    <a href="{{ auth()->user()->isStaff() ? route('admin.dashboard') : route('patient.dashboard') }}" class="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                        Dashboard
+                    </a>
+                    <a href="{{ route('book') }}" class="rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
+                        Book Appointment
+                    </a>
+                @endguest
             </div>
         </div>
     </div>

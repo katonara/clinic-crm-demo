@@ -1,26 +1,40 @@
 # ClinicCare — Clinic CRM Booking System
 
-A modern, mobile-responsive **clinic appointment booking** system. This repository contains
-**Phase 1**: a professional public landing page plus a PDPA-compliant privacy policy. Later phases
-will add patient authentication, email OTP verification, and the full booking module.
+A modern, mobile-responsive **clinic appointment booking** system covering the full flow:
+a public landing page, patient registration with **email OTP verification**, online appointment
+booking, and a **staff/admin dashboard** to manage bookings and services — plus a PDPA-compliant
+privacy policy.
 
 Built with **Laravel 12**, **Tailwind CSS v4**, and **Alpine.js**.
 
+## 🔑 Demo accounts (after `php artisan db:seed`)
+
+| Role    | Email                        | Password   |
+|---------|------------------------------|------------|
+| Staff   | `staff@cliniccare.example`   | `password` |
+| Patient | `patient@cliniccare.example` | `password` |
+
+> In local dev, `MAIL_MAILER=log`, so OTP emails are written to `storage/logs/laravel.log`.
+> The OTP verification screen also displays the code directly for convenience.
+
 ---
 
-## ✨ Features (Phase 1)
+## ✨ Features
 
-- **Responsive landing page** (blue/white clinic theme) with:
-  - Hero section + Tailwind-only dashboard preview
-  - Trust highlights, services grid, "How It Works" steps
-  - Patient/Staff benefits, feature preview cards
-  - FAQ accordion (Alpine.js) and contact CTA
-  - Sticky navbar with mobile hamburger menu
+- **Responsive landing page** (blue/white clinic theme): hero + dashboard preview, services grid,
+  "How It Works", benefits, feature preview, FAQ accordion (Alpine.js), contact CTA, sticky navbar
+  with mobile hamburger menu.
+- **Authentication + email OTP**: register, login, logout, and 6-digit email OTP verification
+  (resend supported). Unverified users are gated until verified.
+- **Patient area**: dashboard with appointment stats, online booking (service + date + time slot),
+  view/cancel appointments, and profile editing.
+- **Staff/admin area** (role-gated): dashboard with today's bookings + stats, full appointments list
+  with status/date filters, confirm/complete/cancel actions, and service management (add/toggle).
 - **Reusable Blade components**: `navbar`, `footer`, `icon`, `service-card`, `feature-card`,
-  `section-heading`
+  `section-heading`, plus shared `auth` and `dashboard` layouts.
 - **Bilingual Privacy Policy** (Bahasa Malaysia + English) aligned with Malaysia's
-  **Personal Data Protection Act 2010 (PDPA / Akta 709)**, with an in-page language toggle
-- Clean MVC structure with named placeholder routes ready for Phase 2
+  **Personal Data Protection Act 2010 (PDPA / Akta 709)**, with an in-page language toggle.
+- **Feature tests** covering the register → OTP → book flow and staff/role authorization.
 
 ## 🧱 Tech stack
 
@@ -33,15 +47,20 @@ Built with **Laravel 12**, **Tailwind CSS v4**, and **Alpine.js**.
 | Build      | Vite                                |
 | Database   | SQLite (default)                    |
 
-## 🗺️ Routes
+## 🗺️ Key routes
 
-| Method | URI                 | Name       | Purpose                          |
-|--------|---------------------|------------|----------------------------------|
-| GET    | `/`                 | `home`     | Landing page                     |
-| GET    | `/login`            | `login`    | Placeholder (Phase 2: auth)      |
-| GET    | `/register`         | `register` | Placeholder (Phase 2: + OTP)     |
-| GET    | `/book-appointment` | `book`     | Placeholder (Phase 3: booking)   |
-| GET    | `/privacy-policy`   | `privacy`  | PDPA bilingual privacy policy    |
+| URI                       | Name                  | Access            | Purpose                         |
+|---------------------------|-----------------------|-------------------|---------------------------------|
+| `/`                       | `home`                | public            | Landing page                    |
+| `/privacy-policy`         | `privacy`             | public            | PDPA bilingual privacy policy   |
+| `/register` · `/login`    | `register` · `login`  | guest             | Account creation / login        |
+| `/verify-email`           | `verification.notice` | auth              | Email OTP verification          |
+| `/dashboard`              | `patient.dashboard`   | patient           | Patient dashboard               |
+| `/book-appointment`       | `book`                | patient           | Booking form                    |
+| `/profile`                | `patient.profile`     | patient           | Edit profile                    |
+| `/admin/dashboard`        | `admin.dashboard`     | staff             | Staff dashboard                 |
+| `/admin/appointments`     | `admin.appointments`  | staff             | Manage all appointments         |
+| `/admin/services`         | `admin.services`      | staff             | Manage services                 |
 
 ## 🚀 Getting started
 
@@ -64,8 +83,8 @@ npm run build        # or: npm run dev  (live reload during development)
 cp .env.example .env  # Windows: copy .env.example .env
 php artisan key:generate
 
-# 4. Database (SQLite by default)
-php artisan migrate
+# 4. Database (SQLite by default) — migrate and seed demo data
+php artisan migrate --seed
 
 # 5. Serve
 php artisan serve
@@ -79,24 +98,33 @@ Then open **http://127.0.0.1:8000**.
 ## 📁 Project structure
 
 ```
-app/Http/Controllers/PageController.php   # Thin controller for all pages
+app/
+├── Http/Controllers/
+│   ├── PageController.php          # Landing + privacy
+│   ├── Auth/                       # Register, login, OTP verification
+│   ├── Patient/                    # Dashboard, booking, profile
+│   └── Admin/                      # Dashboard, appointments, services
+├── Http/Middleware/EnsureUserIsStaff.php
+├── Models/                         # User, Service, Appointment
+├── Mail/OtpMail.php                # OTP email
+└── Services/OtpService.php         # OTP generate/verify logic
 resources/views/
-├── layouts/app.blade.php                 # Base layout (navbar + footer + @vite)
-├── home.blade.php                        # Landing page (all sections)
-├── privacy.blade.php                     # Bilingual PDPA privacy policy
-├── placeholder.blade.php                 # Stub for login/register/book
-└── components/                           # Reusable Blade components
-resources/css/app.css                     # Tailwind + brand theme
-resources/js/app.js                       # Alpine.js setup
-routes/web.php                            # Route definitions
+├── layouts/                        # app (public), auth, dashboard
+├── home.blade.php · privacy.blade.php
+├── auth/ · patient/ · admin/       # Feature views
+├── emails/otp.blade.php
+└── components/                     # Reusable Blade components
+routes/web.php · database/migrations · database/seeders
+tests/Feature/BookingFlowTest.php   # End-to-end flow + authorization tests
 ```
 
 ## 🛣️ Roadmap
 
 - [x] **Phase 1** — Landing page + PDPA privacy policy
-- [ ] **Phase 2** — Patient registration, login, email OTP verification
-- [ ] **Phase 3** — Appointment booking module (services, dates, status)
-- [ ] **Phase 4** — Staff/admin dashboard (schedule, patient records)
+- [x] **Phase 2** — Patient registration, login, email OTP verification
+- [x] **Phase 3** — Appointment booking module (services, dates, status)
+- [x] **Phase 4** — Staff/admin dashboard (appointments, services)
+- [ ] **Future** — real SMTP/WhatsApp notifications, reschedule flow, reporting, time-slot conflict checks
 
 ## ⚖️ Disclaimer
 
