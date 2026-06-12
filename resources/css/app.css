@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Clinic brand — blue scale (used as bg-brand-600, text-brand-700, etc.) */
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-200: #bfdbfe;
+    --color-brand-300: #93c5fd;
+    --color-brand-400: #60a5fa;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+    --color-brand-800: #1e40af;
+    --color-brand-900: #1e3a8a;
+    --color-brand-950: #172554;
+}
+
+/* Smooth in-page anchor scrolling, offset for the sticky header */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+}
+
+/* Hide Alpine-controlled elements until Alpine initializes */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Readable prose for the privacy policy body (Tailwind resets list styles) */
+.pdpa-prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+}
+.pdpa-prose li {
+    margin-top: 0.25rem;
+}
+.pdpa-prose strong {
+    color: #0f172a;
+    font-weight: 600;
+}
