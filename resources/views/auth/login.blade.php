@@ -21,7 +21,10 @@
         </div>
 
         <div>
-            <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
+            <div class="mb-1 flex items-center justify-between">
+                <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+                <a href="{{ route('password.request') }}" class="text-xs font-semibold text-brand-700 hover:underline">Forgot password?</a>
+            </div>
             <input id="password" name="password" type="password" required
                 class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none">
             @error('password') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror

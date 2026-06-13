@@ -40,6 +40,12 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="rounded-full px-3 py-1 text-xs font-semibold capitalize {{ $appointment->statusBadgeClass() }}">{{ $appointment->status }}</span>
+                    @if ($url = $appointment->user->whatsappUrl('Hi ' . $appointment->user->name . ', regarding your appointment today at ' . $appointment->appointment_time . '.'))
+                        <a href="{{ $url }}" target="_blank" rel="noopener" title="Message on WhatsApp"
+                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 transition hover:bg-green-100">
+                            <x-icon name="chat" class="h-4 w-4" />
+                        </a>
+                    @endif
                     @include('admin.partials.status-actions', ['appointment' => $appointment])
                 </div>
             </div>

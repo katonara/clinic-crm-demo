@@ -72,4 +72,22 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return $this->role === 'staff';
     }
+
+    /**
+     * Build a click-to-chat WhatsApp deep link for this user.
+     * Uses the WhatsApp number when set, otherwise falls back to the phone.
+     * Returns null when no usable number is on file.
+     */
+    public function whatsappUrl(string $message = ''): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) ($this->whatsapp ?: $this->phone));
+
+        if (blank($digits)) {
+            return null;
+        }
+
+        $url = 'https://wa.me/' . $digits;
+
+        return $message !== '' ? $url . '?text=' . rawurlencode($message) : $url;
+    }
 }

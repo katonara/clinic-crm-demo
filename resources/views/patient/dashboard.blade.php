@@ -57,6 +57,7 @@
                         {{ $appointment->status }}
                     </span>
                     @if (in_array($appointment->status, ['pending', 'confirmed']))
+                        <a href="{{ route('patient.appointments.edit', $appointment) }}" class="text-xs font-semibold text-brand-700 hover:underline">Reschedule</a>
                         <form method="POST" action="{{ route('patient.appointments.cancel', $appointment) }}"
                             onsubmit="return confirm('Cancel this appointment?')">
                             @csrf

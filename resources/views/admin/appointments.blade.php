@@ -8,6 +8,11 @@
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">Appointments</h1>
             <p class="mt-1 text-sm text-slate-500">Manage and confirm patient bookings.</p>
         </div>
+        <a href="{{ route('admin.appointments.export', request()->only('status', 'date')) }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Export CSV
+        </a>
     </div>
 
     {{-- Filters --}}
@@ -60,7 +65,13 @@
                                 <span class="rounded-full px-3 py-1 text-xs font-semibold capitalize {{ $appointment->statusBadgeClass() }}">{{ $appointment->status }}</span>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex justify-end">
+                                <div class="flex items-center justify-end gap-2">
+                                    @if ($url = $appointment->user->whatsappUrl('Hi ' . $appointment->user->name . ', regarding your ' . $appointment->service->name . ' appointment on ' . $appointment->appointment_date->format('d M Y') . ' at ' . $appointment->appointment_time . '.'))
+                                        <a href="{{ $url }}" target="_blank" rel="noopener" title="Message on WhatsApp"
+                                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 transition hover:bg-green-100">
+                                            <x-icon name="chat" class="h-4 w-4" />
+                                        </a>
+                                    @endif
                                     @include('admin.partials.status-actions', ['appointment' => $appointment])
                                 </div>
                             </td>

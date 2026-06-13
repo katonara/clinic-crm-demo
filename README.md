@@ -29,7 +29,12 @@ Built with **Laravel 12**, **Tailwind CSS v4**, and **Alpine.js**.
 - **Patient area**: dashboard with appointment stats, online booking (service + date + time slot),
   view/cancel appointments, and profile editing.
 - **Staff/admin area** (role-gated): dashboard with today's bookings + stats, full appointments list
-  with status/date filters, confirm/complete/cancel actions, and service management (add/toggle).
+  with status/date filters, confirm/complete/cancel actions, service management (add/toggle),
+  **patient records**, a **month calendar** view, and **CSV export** of appointments.
+- **Notifications**: email on booking/confirm/complete/cancel + daily follow-up reminder command;
+  click-to-chat **WhatsApp** links to patients.
+- **Smart booking**: double-booking prevention, live available-slot greying, and **reschedule**.
+- **Password reset** via emailed link, plus in-profile password change.
 - **Reusable Blade components**: `navbar`, `footer`, `icon`, `service-card`, `feature-card`,
   `section-heading`, plus shared `auth` and `dashboard` layouts.
 - **Bilingual Privacy Policy** (Bahasa Malaysia + English) aligned with Malaysia's
@@ -124,7 +129,15 @@ tests/Feature/BookingFlowTest.php   # End-to-end flow + authorization tests
 - [x] **Phase 2** — Patient registration, login, email OTP verification
 - [x] **Phase 3** — Appointment booking module (services, dates, status)
 - [x] **Phase 4** — Staff/admin dashboard (appointments, services)
-- [ ] **Future** — real SMTP/WhatsApp notifications, reschedule flow, reporting, time-slot conflict checks
+- [x] **Phase 5** — Notifications + WhatsApp + reminders, smart booking (conflict/slots/reschedule),
+  password reset, advanced admin (patient records, calendar, CSV export)
+- [ ] **Future** — real SMTP/WhatsApp API, per-service slot capacity, reporting dashboards, audit log
+
+## ⏰ Scheduled reminders
+
+`appointments:reminders` emails patients whose **confirmed** appointment is tomorrow. Run it manually
+with `php artisan appointments:reminders`, or keep `php artisan schedule:work` running (dev) / add a
+cron calling `php artisan schedule:run` every minute (prod) — it's scheduled daily at 08:00.
 
 ## ⚖️ Disclaimer
 
