@@ -19,7 +19,7 @@
                     url.searchParams.set('date', this.date);
                     @if ($isEdit) url.searchParams.set('ignore', '{{ $appointment->id }}'); @endif
                     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                    this.taken = (await res.json()).taken || [];
+                    this.taken = (await res.json()).full || [];
                 } catch (e) { this.taken = []; } finally { this.loading = false; }
             }
         }"
@@ -97,7 +97,7 @@
                             <option value="{{ $slot }}"
                                 @selected(old('appointment_time', $appointment?->appointment_time) === $slot)
                                 :disabled="taken.includes('{{ $slot }}')"
-                                x-text="taken.includes('{{ $slot }}') ? '{{ $slot }} — booked' : '{{ $slot }}'">{{ $slot }}</option>
+                                x-text="taken.includes('{{ $slot }}') ? '{{ $slot }} — full' : '{{ $slot }}'">{{ $slot }}</option>
                         @endforeach
                     </select>
                     @error('appointment_time') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror

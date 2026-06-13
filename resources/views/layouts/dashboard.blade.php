@@ -16,8 +16,10 @@
                 ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
                 ['label' => 'Appointments', 'route' => 'admin.appointments'],
                 ['label' => 'Calendar', 'route' => 'admin.calendar'],
+                ['label' => 'Reports', 'route' => 'admin.reports'],
                 ['label' => 'Patients', 'route' => 'admin.patients'],
                 ['label' => 'Services', 'route' => 'admin.services'],
+                ['label' => 'Rooms', 'route' => 'admin.rooms'],
             ]
             : [
                 ['label' => 'Dashboard', 'route' => 'patient.dashboard'],

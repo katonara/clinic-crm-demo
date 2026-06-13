@@ -76,9 +76,12 @@ Route::middleware(['auth', 'verified', 'staff'])->prefix('admin')->name('admin.'
 
     Route::get('/appointments', [Admin\AppointmentController::class, 'index'])->name('appointments');
     Route::get('/appointments/export', [Admin\AppointmentController::class, 'export'])->name('appointments.export');
+    Route::get('/appointments/{appointment}/reschedule', [Admin\AppointmentController::class, 'edit'])->name('appointments.edit');
+    Route::patch('/appointments/{appointment}', [Admin\AppointmentController::class, 'update'])->name('appointments.update');
     Route::patch('/appointments/{appointment}/status', [Admin\AppointmentController::class, 'updateStatus'])->name('appointments.status');
 
     Route::get('/calendar', [Admin\CalendarController::class, 'index'])->name('calendar');
+    Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports');
 
     Route::get('/patients', [Admin\PatientController::class, 'index'])->name('patients');
     Route::get('/patients/{patient}', [Admin\PatientController::class, 'show'])->name('patients.show');
@@ -86,4 +89,8 @@ Route::middleware(['auth', 'verified', 'staff'])->prefix('admin')->name('admin.'
     Route::get('/services', [Admin\ServiceController::class, 'index'])->name('services');
     Route::post('/services', [Admin\ServiceController::class, 'store'])->name('services.store');
     Route::patch('/services/{service}/toggle', [Admin\ServiceController::class, 'toggle'])->name('services.toggle');
+
+    Route::get('/rooms', [Admin\RoomController::class, 'index'])->name('rooms');
+    Route::post('/rooms', [Admin\RoomController::class, 'store'])->name('rooms.store');
+    Route::patch('/rooms/{room}/toggle', [Admin\RoomController::class, 'toggle'])->name('rooms.toggle');
 });

@@ -6,31 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Mail\AppointmentMail;
 use App\Models\Appointment;
 use App\Models\Service;
-use App\Rules\SlotAvailable;
+use App\Services\RoomScheduler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Time slots offered by the clinic.
-     */
-    public const TIME_SLOTS = [
-        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-    ];
+    public function __construct(private RoomScheduler $scheduler) {}
 
     public function create(Request $request): View
     {
-        $services = Service::where('is_active', true)->orderBy('name')->get();
-
         return view('patient.book', [
-            'services' => $services,
-            'slots' => self::TIME_SLOTS,
+            'services' => Service::where('is_active', true)->orderBy('name')->get(),
+            'slots' => RoomScheduler::SLOTS,
             'selectedService' => $request->query('service'),
             'appointment' => null,
         ]);
@@ -41,11 +34,16 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'service_id' => ['required', 'exists:services,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
-            'appointment_time' => ['required', 'in:' . implode(',', self::TIME_SLOTS), new SlotAvailable($request->input('appointment_date'))],
+            'appointment_time' => ['required', 'in:' . implode(',', RoomScheduler::SLOTS)],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $appointment = Auth::user()->appointments()->create($validated + ['status' => 'pending']);
+        $roomId = $this->assignRoomOrFail($validated['appointment_date'], $validated['appointment_time']);
+
+        $appointment = Auth::user()->appointments()->create($validated + [
+            'room_id' => $roomId,
+            'status' => 'pending',
+        ]);
 
         $this->notify($appointment, 'booked');
 
@@ -53,9 +51,6 @@ class AppointmentController extends Controller
             ->with('status', 'Your appointment request has been submitted. Our staff will confirm it shortly.');
     }
 
-    /**
-     * Show the reschedule form (booking form in edit mode; service is locked).
-     */
     public function edit(Appointment $appointment): View
     {
         abort_unless($appointment->user_id === Auth::id(), 403);
@@ -65,7 +60,7 @@ class AppointmentController extends Controller
 
         return view('patient.book', [
             'services' => Service::where('is_active', true)->orderBy('name')->get(),
-            'slots' => self::TIME_SLOTS,
+            'slots' => RoomScheduler::SLOTS,
             'selectedService' => $appointment->service_id,
             'appointment' => $appointment,
         ]);
@@ -78,11 +73,13 @@ class AppointmentController extends Controller
 
         $validated = $request->validate([
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
-            'appointment_time' => ['required', 'in:' . implode(',', self::TIME_SLOTS), new SlotAvailable($request->input('appointment_date'), $appointment->id)],
+            'appointment_time' => ['required', 'in:' . implode(',', RoomScheduler::SLOTS)],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $appointment->update($validated);
+        $roomId = $this->assignRoomOrFail($validated['appointment_date'], $validated['appointment_time'], $appointment->id);
+
+        $appointment->update($validated + ['room_id' => $roomId]);
 
         return redirect()->route('patient.dashboard')
             ->with('status', 'Your appointment has been rescheduled.');
@@ -101,31 +98,32 @@ class AppointmentController extends Controller
     }
 
     /**
-     * JSON list of taken time slots for a given date (used to grey out the dropdown).
+     * JSON list of fully-booked time slots for a date (used to grey out the picker).
      */
     public function availability(Request $request): JsonResponse
     {
-        $date = $request->query('date');
-        $ignore = $request->query('ignore');
+        return response()->json([
+            'full' => $this->scheduler->fullSlots(
+                (string) $request->query('date'),
+                $request->query('ignore') ? (int) $request->query('ignore') : null,
+            ),
+        ]);
+    }
 
-        $taken = Appointment::query()
-            ->when($date, fn ($q) => $q->whereDate('appointment_date', $date))
-            ->where('status', '!=', 'cancelled')
-            ->when($ignore, fn ($q) => $q->where('id', '!=', $ignore))
-            ->pluck('appointment_time')
-            ->unique()
-            ->values();
+    /**
+     * Resolve a free room for the slot or throw a validation error when full.
+     */
+    private function assignRoomOrFail(string $date, string $time, ?int $ignoreId = null): int
+    {
+        $roomId = $this->scheduler->freeRoomId($date, $time, $ignoreId);
 
-        // For today, also block times that have already passed.
-        $past = [];
-        if ($date === now()->toDateString()) {
-            $now = now()->format('H:i');
-            $past = array_values(array_filter(self::TIME_SLOTS, fn ($s) => $s <= $now));
+        if ($roomId === null) {
+            throw ValidationException::withMessages([
+                'appointment_time' => 'That time slot is fully booked. Please choose another time.',
+            ]);
         }
 
-        return response()->json([
-            'taken' => $taken->merge($past)->unique()->values(),
-        ]);
+        return $roomId;
     }
 
     private function notify(Appointment $appointment, string $kind): void

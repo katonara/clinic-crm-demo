@@ -33,7 +33,11 @@ Built with **Laravel 12**, **Tailwind CSS v4**, and **Alpine.js**.
   **patient records**, a **month calendar** view, and **CSV export** of appointments.
 - **Notifications**: email on booking/confirm/complete/cancel + daily follow-up reminder command;
   click-to-chat **WhatsApp** links to patients.
-- **Smart booking**: double-booking prevention, live available-slot greying, and **reschedule**.
+- **Smart booking**: **treatment-room capacity** (a slot is bookable while any of the active rooms
+  is free; each booking auto-assigned a room), sessions **10:00–18:00** hourly, live full-slot
+  greying, and **reschedule for both patients and staff**.
+- **Reporting dashboard**: totals, status distribution, last-6-months trend, by-service, and
+  room-utilisation charts.
 - **Password reset** via emailed link, plus in-profile password change.
 - **Reusable Blade components**: `navbar`, `footer`, `icon`, `service-card`, `feature-card`,
   `section-heading`, plus shared `auth` and `dashboard` layouts.
@@ -129,9 +133,11 @@ tests/Feature/BookingFlowTest.php   # End-to-end flow + authorization tests
 - [x] **Phase 2** — Patient registration, login, email OTP verification
 - [x] **Phase 3** — Appointment booking module (services, dates, status)
 - [x] **Phase 4** — Staff/admin dashboard (appointments, services)
-- [x] **Phase 5** — Notifications + WhatsApp + reminders, smart booking (conflict/slots/reschedule),
-  password reset, advanced admin (patient records, calendar, CSV export)
-- [ ] **Future** — real SMTP/WhatsApp API, per-service slot capacity, reporting dashboards, audit log
+- [x] **Phase 5** — Notifications + WhatsApp + reminders, smart booking, password reset,
+  advanced admin (patient records, calendar, CSV export)
+- [x] **Phase 6** — Treatment-room capacity (5 rooms, admin-managed), 10:00–18:00 sessions,
+  staff reschedule, reporting dashboard
+- [ ] **Future** — real SMTP/WhatsApp API, per-service room mapping, audit log, online payments
 
 ## ⏰ Scheduled reminders
 

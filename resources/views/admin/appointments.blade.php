@@ -56,7 +56,12 @@
                                 <p class="font-semibold text-slate-900">{{ $appointment->user->name }}</p>
                                 <p class="text-xs text-slate-400">{{ $appointment->user->phone }}</p>
                             </td>
-                            <td class="px-6 py-4 text-slate-600">{{ $appointment->service->name }}</td>
+                            <td class="px-6 py-4 text-slate-600">
+                                {{ $appointment->service->name }}
+                                @if ($appointment->room)
+                                    <span class="mt-0.5 block text-xs text-slate-400">{{ $appointment->room->name }}</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-slate-600">
                                 {{ $appointment->appointment_date->format('d M Y') }}
                                 <span class="text-slate-400">· {{ $appointment->appointment_time }}</span>
@@ -71,6 +76,10 @@
                                             class="flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 transition hover:bg-green-100">
                                             <x-icon name="chat" class="h-4 w-4" />
                                         </a>
+                                    @endif
+                                    @if (in_array($appointment->status, ['pending', 'confirmed']))
+                                        <a href="{{ route('admin.appointments.edit', $appointment) }}" title="Reschedule"
+                                            class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">Reschedule</a>
                                     @endif
                                     @include('admin.partials.status-actions', ['appointment' => $appointment])
                                 </div>

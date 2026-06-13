@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Appointment;
+use App\Models\Room;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class BookingFlowTest extends TestCase
@@ -22,6 +24,13 @@ class BookingFlowTest extends TestCase
             'description' => 'Test service',
             'is_active' => true,
         ]);
+    }
+
+    private function makeRooms(int $n = 5): void
+    {
+        for ($i = 1; $i <= $n; $i++) {
+            Room::create(['name' => "Room {$i}", 'is_active' => true]);
+        }
     }
 
     public function test_guest_is_redirected_from_protected_pages(): void
@@ -57,12 +66,14 @@ class BookingFlowTest extends TestCase
         $this->assertNotNull($user->fresh()->email_verified_at);
 
         // Book an appointment
+        Mail::fake();
         $service = $this->makeService();
+        $this->makeRooms();
 
         $this->actingAs($user->fresh())->post('/book-appointment', [
             'service_id' => $service->id,
             'appointment_date' => now()->addDay()->toDateString(),
-            'appointment_time' => '09:00',
+            'appointment_time' => '10:00',
             'notes' => 'First visit',
         ])->assertRedirect(route('patient.dashboard'));
 

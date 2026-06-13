@@ -5,14 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\AppointmentMail;
 use App\Models\Appointment;
+use App\Services\RoomScheduler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AppointmentController extends Controller
 {
+    public function __construct(private RoomScheduler $scheduler) {}
+
     public function index(Request $request): View
     {
         $appointments = $this->filtered($request)
@@ -47,12 +51,46 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Staff reschedule form.
+     */
+    public function edit(Appointment $appointment): View
+    {
+        $appointment->load(['user', 'service']);
+
+        return view('admin.appointment-edit', [
+            'appointment' => $appointment,
+            'slots' => RoomScheduler::SLOTS,
+        ]);
+    }
+
+    public function update(Request $request, Appointment $appointment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'appointment_date' => ['required', 'date'],
+            'appointment_time' => ['required', 'in:' . implode(',', RoomScheduler::SLOTS)],
+        ]);
+
+        $roomId = $this->scheduler->freeRoomId($validated['appointment_date'], $validated['appointment_time'], $appointment->id);
+
+        if ($roomId === null) {
+            throw ValidationException::withMessages([
+                'appointment_time' => 'That time slot is fully booked. Please choose another time.',
+            ]);
+        }
+
+        $appointment->update($validated + ['room_id' => $roomId]);
+
+        return redirect()->route('admin.appointments')
+            ->with('status', "Appointment #{$appointment->id} rescheduled.");
+    }
+
+    /**
      * Stream the (filtered) appointments as a CSV download.
      */
     public function export(Request $request): StreamedResponse
     {
         $appointments = $this->filtered($request)
-            ->with(['user', 'service'])
+            ->with(['user', 'service', 'room'])
             ->orderByDesc('appointment_date')
             ->orderBy('appointment_time')
             ->get();
@@ -61,7 +99,7 @@ class AppointmentController extends Controller
 
         return response()->streamDownload(function () use ($appointments) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['ID', 'Patient', 'Email', 'Phone', 'Service', 'Date', 'Time', 'Status', 'Notes']);
+            fputcsv($out, ['ID', 'Patient', 'Email', 'Phone', 'Service', 'Room', 'Date', 'Time', 'Status', 'Notes']);
 
             foreach ($appointments as $a) {
                 fputcsv($out, [
@@ -70,6 +108,7 @@ class AppointmentController extends Controller
                     $a->user->email,
                     $a->user->phone,
                     $a->service->name,
+                    $a->room?->name,
                     $a->appointment_date->format('Y-m-d'),
                     $a->appointment_time,
                     $a->status,

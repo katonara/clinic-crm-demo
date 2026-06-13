@@ -12,6 +12,7 @@ class Appointment extends Model
     protected $fillable = [
         'user_id',
         'service_id',
+        'room_id',
         'appointment_date',
         'appointment_time',
         'status',
@@ -33,6 +34,11 @@ class Appointment extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
     }
 
     /**

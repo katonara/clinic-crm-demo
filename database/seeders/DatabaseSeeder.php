@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Room;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -29,6 +30,11 @@ class DatabaseSeeder extends Seeder
                 ['slug' => \Illuminate\Support\Str::slug($service['name'])],
                 $service + ['slug' => \Illuminate\Support\Str::slug($service['name']), 'is_active' => true],
             );
+        }
+
+        // Treatment rooms — capacity per time slot equals the number of active rooms.
+        for ($i = 1; $i <= 5; $i++) {
+            Room::updateOrCreate(['name' => "Treatment Room {$i}"], ['is_active' => true]);
         }
 
         // Clinic staff / admin account.
